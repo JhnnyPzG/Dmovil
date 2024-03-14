@@ -8,8 +8,7 @@ void main() {
   List<Map<String, dynamic>> pacientes = [];
 
   for (int i = 0; i < numPacientes; i++) {
-    stdout
-        .write("Ingrese el sexo del paciente ${i + 1} (1. Hombre, 2. Mujer): ");
+    stdout.write("Ingrese el sexo del paciente ${i + 1} (1. Hombre, 2. Mujer): ");
     int sexo = int.parse(stdin.readLineSync()!);
 
     stdout.write(
