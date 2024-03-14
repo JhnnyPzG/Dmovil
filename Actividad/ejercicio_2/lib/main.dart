@@ -18,8 +18,8 @@ class MainApp extends StatelessWidget {
         appBar: AppBar(),
         body: Column(
           children: <Widget>[
-            CustomImage(), // Usando el módulo de la imagen
-            CustomTitle(), // Usando el módulo del título
+            CustomImage(),
+            CustomTitle(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
