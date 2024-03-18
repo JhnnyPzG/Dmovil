@@ -19,8 +19,6 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      // Elimina o cambia readOnly a false para permitir interacción con el botón de refresco
-      //readOnly: true,
       decoration: InputDecoration(
         labelText: labelText,
         suffixIcon: Row(
@@ -33,7 +31,7 @@ class CustomTextField extends StatelessWidget {
               ),
             IconButton(
               icon: Icon(Icons.refresh),
-              onPressed: refreshIconOnPressed, // Call the refresh callback
+              onPressed: refreshIconOnPressed,
             ),
           ],
         ),

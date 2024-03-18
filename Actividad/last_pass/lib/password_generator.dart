@@ -30,7 +30,6 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
   TextEditingController passwordController = TextEditingController();
   bool isChecked = false;
   double _passwordLength = 8;
-
   String _selectedOption = 'Todos los caracteres';
   bool _includeUppercase = true;
   bool _includeLowercase = true;
