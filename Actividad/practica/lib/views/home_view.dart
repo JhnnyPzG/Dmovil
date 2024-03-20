@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../controllers/task_controller.dart';
 
-enum TaskFilter { all, completed, incomplete }
-
 class TaskListScreen extends StatefulWidget {
   @override
   _TaskListScreenState createState() => _TaskListScreenState();
@@ -13,23 +11,13 @@ class _TaskListScreenState extends State<TaskListScreen> {
   final TaskController _taskController = TaskController();
   final TextEditingController _newTaskController = TextEditingController();
   final TextEditingController _editTaskController = TextEditingController();
-  TaskFilter _filter = TaskFilter.all;
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Lista de Tareas'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.filter_list),
-            onPressed: () {
-              setState(() {
-                _filter = _getNextFilter(_filter);
-              });
-            },
-          ),
-        ],
       ),
       body: _buildTaskList(),
       floatingActionButton: FloatingActionButton(
@@ -38,11 +26,32 @@ class _TaskListScreenState extends State<TaskListScreen> {
         },
         child: Icon(Icons.add),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.check_circle),
+            label: 'Completadas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.radio_button_unchecked),
+            label: 'Incompletas',
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildTaskList() {
-    final tasksToShow = _getFilteredTasks();
+    final List<Task> tasksToShow = _currentIndex == 0
+        ? _taskController.getCompletedTasks()
+        : _taskController.getIncompleteTasks();
+
     return ListView.builder(
       itemCount: tasksToShow.length,
       itemBuilder: (context, index) {
@@ -148,29 +157,5 @@ class _TaskListScreenState extends State<TaskListScreen> {
         );
       },
     );
-  }
-
-  List<Task> _getFilteredTasks() {
-    switch (_filter) {
-      case TaskFilter.completed:
-        return _taskController.getCompletedTasks();
-      case TaskFilter.incomplete:
-        return _taskController.getIncompleteTasks();
-      case TaskFilter.all:
-      default:
-        return _taskController.getAllTasks();
-    }
-  }
-
-  TaskFilter _getNextFilter(TaskFilter currentFilter) {
-    switch (currentFilter) {
-      case TaskFilter.completed:
-        return TaskFilter.incomplete;
-      case TaskFilter.incomplete:
-        return TaskFilter.all;
-      case TaskFilter.all:
-      default:
-        return TaskFilter.completed;
-    }
   }
 }
