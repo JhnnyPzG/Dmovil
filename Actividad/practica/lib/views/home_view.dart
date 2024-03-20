@@ -28,7 +28,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
         onPressed: () {
           _showAddTaskDialog();
         },
-        child: Icon(Icons.add),
+        backgroundColor: Colors.blue.shade400,
+        child: Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -39,11 +40,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.check_circle),
+            icon: Icon(Icons.check_circle, color: Colors.green),
             label: 'Completadas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.radio_button_unchecked),
+            icon: Icon(Icons.cancel_rounded, color: Colors.red),
             label: 'Incompletas',
           ),
         ],
@@ -83,13 +84,13 @@ class _TaskListScreenState extends State<TaskListScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(Icons.edit),
+                icon: Icon(Icons.edit, color: Colors.blue.shade400),
                 onPressed: () {
                   _showEditTaskDialog(task);
                 },
               ),
               IconButton(
-                icon: Icon(Icons.delete),
+                icon: Icon(Icons.delete, color: Colors.red),
                 onPressed: () {
                   setState(() {
                     _taskController.deleteTask(task);
@@ -110,7 +111,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Agregar Tarea'),
+              title: const Text('Agregar Tarea',
+                  style: TextStyle(color: Colors.black)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -171,8 +173,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ),
               ),
               actions: <Widget>[
-                TextButton(
-                  child: Text('Cancelar'),
+                ElevatedButton(
+                  child: const Text('Cancelar',
+                      style: TextStyle(color: Colors.red)),
                   onPressed: () {
                     Navigator.of(context).pop();
                     _newTaskController.clear();
@@ -180,21 +183,21 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     _deadlineController.clear();
                   },
                 ),
-                TextButton(
-                  child: Text('Agregar'),
+                ElevatedButton(
+                  child: const Text('Agregar',
+                      style: TextStyle(color: Colors.green)),
                   onPressed: () {
-                    setState(() {
-                      _taskController.addTask(
-                        _newTaskController.text,
-                        description: _descriptionController.text,
-                        deadline: _deadline,
-                        priority: taskPriority,
-                      );
-                    });
+                    _taskController.addTask(
+                      _newTaskController.text,
+                      description: _descriptionController.text,
+                      deadline: _deadline,
+                      priority: taskPriority,
+                    );
                     Navigator.of(context).pop();
                     _newTaskController.clear();
                     _descriptionController.clear();
                     _deadlineController.clear();
+                    setState(() {});
                   },
                 ),
               ],
@@ -217,7 +220,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Editar Tarea'),
+              title: const Text('Editar Tarea',
+                  style: TextStyle(color: Colors.black)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -290,20 +294,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 TextButton(
                   child: Text('Guardar'),
                   onPressed: () {
-                    setState(() {
-                      _taskController.editTask(
-                        task,
-                        _editTaskController.text,
-                        newDescription: _descriptionController
-                            .text, // Here is the correction
-                        newDeadline: _deadline,
-                        newPriority: taskPriority,
-                      );
-                    });
+                    _taskController.editTask(
+                      task,
+                      _editTaskController.text,
+                      newDescription: _descriptionController.text,
+                      newDeadline: _deadline,
+                      newPriority: taskPriority,
+                    );
                     Navigator.of(context).pop();
                     _editTaskController.clear();
                     _descriptionController.clear();
                     _deadlineController.clear();
+                    setState(
+                        () {}); // Actualizar la interfaz después de editar la tarea
                   },
                 ),
               ],
