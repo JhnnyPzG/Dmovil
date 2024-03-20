@@ -57,7 +57,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
         ? _taskController.getCompletedTasks()
         : _taskController.getIncompleteTasks();
 
-    tasksToShow.sort((a, b) => a.priority.index.compareTo(b.priority.index));
+    tasksToShow.sort((a, b) {
+      int priorityComparison = b.priority.index.compareTo(a.priority.index);
+
+      if (priorityComparison == 0) {
+        return a.name.compareTo(b.name);
+      }
+
+      return priorityComparison;
+    });
 
     return ListView.builder(
       itemCount: tasksToShow.length,
@@ -79,10 +87,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 task.toggleComplete();
               });
             },
+            activeColor: Colors.green,
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                _getPriorityText(task.priority),
+                style: TextStyle(
+                  color: _getPriorityColor(task.priority),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(width: 10),
               IconButton(
                 icon: Icon(Icons.edit, color: Colors.blue.shade400),
                 onPressed: () {
@@ -102,6 +119,32 @@ class _TaskListScreenState extends State<TaskListScreen> {
         );
       },
     );
+  }
+
+  Color _getPriorityColor(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.Low:
+        return Colors.green;
+      case TaskPriority.Medium:
+        return Colors.orange;
+      case TaskPriority.High:
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
+  }
+
+  String _getPriorityText(TaskPriority priority) {
+    switch (priority) {
+      case TaskPriority.Low:
+        return 'Baja';
+      case TaskPriority.Medium:
+        return 'Media';
+      case TaskPriority.High:
+        return 'Alta';
+      default:
+        return '';
+    }
   }
 
   void _showAddTaskDialog() {
@@ -305,8 +348,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     _editTaskController.clear();
                     _descriptionController.clear();
                     _deadlineController.clear();
-                    setState(
-                        () {}); // Actualizar la interfaz después de editar la tarea
+                    setState(() {});
                   },
                 ),
               ],
