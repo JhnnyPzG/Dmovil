@@ -3,8 +3,15 @@ import '../models/task.dart';
 class TaskController {
   List<Task> _tasks = [];
 
-  void addTask(String name) {
-    final task = Task(name: name);
+  void addTask(String name,
+      {String description = '',
+      DateTime? deadline,
+      TaskPriority priority = TaskPriority.Low}) {
+    final task = Task(
+        name: name,
+        description: description,
+        deadline: deadline,
+        priority: priority);
     _tasks.add(task);
   }
 
@@ -16,8 +23,14 @@ class TaskController {
     task.toggleComplete();
   }
 
-  void editTask(Task task, String newName) {
+  void editTask(Task task, String newName,
+      {String newDescription = '',
+      DateTime? newDeadline,
+      TaskPriority newPriority = TaskPriority.Low}) {
     task.name = newName;
+    task.description = newDescription;
+    task.deadline = newDeadline;
+    task.priority = newPriority;
   }
 
   List<Task> getAllTasks() {

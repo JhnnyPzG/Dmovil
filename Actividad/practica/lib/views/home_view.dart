@@ -11,7 +11,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
   final TaskController _taskController = TaskController();
   final TextEditingController _newTaskController = TextEditingController();
   final TextEditingController _editTaskController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _deadlineController = TextEditingController();
+  DateTime? _deadline;
   int _currentIndex = 0;
+  TaskPriority taskPriority = TaskPriority.Low;
 
   @override
   Widget build(BuildContext context) {
@@ -52,12 +56,21 @@ class _TaskListScreenState extends State<TaskListScreen> {
         ? _taskController.getCompletedTasks()
         : _taskController.getIncompleteTasks();
 
+    tasksToShow.sort((a, b) => a.priority.index.compareTo(b.priority.index));
+
     return ListView.builder(
       itemCount: tasksToShow.length,
       itemBuilder: (context, index) {
         var task = tasksToShow[index];
         return ListTile(
-          title: Text(task.name), // Descripción de la tarea
+          title: Text(task.name),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (task.description.isNotEmpty) Text(task.description),
+              if (task.deadline != null) Text('Fecha límite: ${task.deadline}'),
+            ],
+          ),
           leading: Checkbox(
             value: task.completed,
             onChanged: (bool? newValue) {
@@ -94,31 +107,99 @@ class _TaskListScreenState extends State<TaskListScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Agregar Tarea'),
-          content: TextField(
-            controller: _newTaskController,
-            decoration: InputDecoration(hintText: "Nombre de la tarea"),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _newTaskController.clear();
-              },
-            ),
-            TextButton(
-              child: Text('Agregar'),
-              onPressed: () {
-                setState(() {
-                  _taskController.addTask(_newTaskController.text);
-                });
-                Navigator.of(context).pop();
-                _newTaskController.clear();
-              },
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Agregar Tarea'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: _newTaskController,
+                      decoration:
+                          InputDecoration(hintText: "Nombre de la tarea"),
+                    ),
+                    TextField(
+                      controller: _descriptionController,
+                      decoration:
+                          InputDecoration(hintText: "Descripción de la tarea"),
+                    ),
+                    TextField(
+                      controller: _deadlineController,
+                      decoration:
+                          InputDecoration(hintText: "Fecha límite (opcional)"),
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null && picked != _deadline) {
+                          setState(() {
+                            _deadline = picked;
+                            _deadlineController.text = picked.toString();
+                          });
+                        }
+                      },
+                    ),
+                    DropdownButtonFormField<TaskPriority>(
+                      value: TaskPriority.Low,
+                      onChanged: (TaskPriority? value) {
+                        setState(() {
+                          taskPriority = value ?? TaskPriority.Low;
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem<TaskPriority>(
+                          value: TaskPriority.Low,
+                          child: Text('Baja'),
+                        ),
+                        DropdownMenuItem<TaskPriority>(
+                          value: TaskPriority.Medium,
+                          child: Text('Media'),
+                        ),
+                        DropdownMenuItem<TaskPriority>(
+                          value: TaskPriority.High,
+                          child: Text('Alta'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancelar'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _newTaskController.clear();
+                    _descriptionController.clear();
+                    _deadlineController.clear();
+                  },
+                ),
+                TextButton(
+                  child: Text('Agregar'),
+                  onPressed: () {
+                    setState(() {
+                      _taskController.addTask(
+                        _newTaskController.text,
+                        description: _descriptionController.text,
+                        deadline: _deadline,
+                        priority: taskPriority,
+                      );
+                    });
+                    Navigator.of(context).pop();
+                    _newTaskController.clear();
+                    _descriptionController.clear();
+                    _deadlineController.clear();
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -126,34 +207,108 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   void _showEditTaskDialog(Task task) {
     _editTaskController.text = task.name;
+    _descriptionController.text = task.description;
+    _deadlineController.text =
+        task.deadline != null ? task.deadline.toString() : '';
+    taskPriority = task.priority;
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Editar Tarea'),
-          content: TextField(
-            controller: _editTaskController,
-            decoration: InputDecoration(hintText: "Nuevo nombre de la tarea"),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _editTaskController.clear();
-              },
-            ),
-            TextButton(
-              child: Text('Guardar'),
-              onPressed: () {
-                setState(() {
-                  _taskController.editTask(task, _editTaskController.text);
-                });
-                Navigator.of(context).pop();
-                _editTaskController.clear();
-              },
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Editar Tarea'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: _editTaskController,
+                      decoration:
+                          InputDecoration(hintText: "Nuevo nombre de la tarea"),
+                    ),
+                    TextField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                          hintText: "Nueva descripción de la tarea"),
+                    ),
+                    TextField(
+                      controller: _deadlineController,
+                      decoration: InputDecoration(
+                          hintText: "Nueva fecha límite (opcional)"),
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null && picked != _deadline) {
+                          setState(() {
+                            _deadline = picked;
+                            _deadlineController.text = picked.toString();
+                          });
+                        }
+                      },
+                    ),
+                    DropdownButtonFormField<TaskPriority>(
+                      value: taskPriority,
+                      onChanged: (TaskPriority? value) {
+                        setState(() {
+                          taskPriority = value ?? TaskPriority.Low;
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem<TaskPriority>(
+                          value: TaskPriority.Low,
+                          child: Text('Baja'),
+                        ),
+                        DropdownMenuItem<TaskPriority>(
+                          value: TaskPriority.Medium,
+                          child: Text('Media'),
+                        ),
+                        DropdownMenuItem<TaskPriority>(
+                          value: TaskPriority.High,
+                          child: Text('Alta'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancelar'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _editTaskController.clear();
+                    _descriptionController.clear();
+                    _deadlineController.clear();
+                  },
+                ),
+                TextButton(
+                  child: Text('Guardar'),
+                  onPressed: () {
+                    setState(() {
+                      _taskController.editTask(
+                        task,
+                        _editTaskController.text,
+                        newDescription: _descriptionController
+                            .text, // Here is the correction
+                        newDeadline: _deadline,
+                        newPriority: taskPriority,
+                      );
+                    });
+                    Navigator.of(context).pop();
+                    _editTaskController.clear();
+                    _descriptionController.clear();
+                    _deadlineController.clear();
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
