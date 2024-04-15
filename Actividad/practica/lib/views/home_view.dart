@@ -53,69 +53,82 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   Widget _buildTaskList() {
-    final List<Task> tasksToShow = _currentIndex == 0
+    final Stream<List<Task>> tasksStream = _currentIndex == 0
         ? _taskController.getCompletedTasks()
         : _taskController.getIncompleteTasks();
 
-    tasksToShow.sort((a, b) {
-      int priorityComparison = b.priority.index.compareTo(a.priority.index);
+    return StreamBuilder<List<Task>>(
+      stream: tasksStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-      if (priorityComparison == 0) {
-        return a.name.compareTo(b.name);
-      }
+        final tasksToShow = snapshot.data ?? [];
 
-      return priorityComparison;
-    });
+        tasksToShow.sort((a, b) {
+          int priorityComparison = b.priority.index.compareTo(a.priority.index);
 
-    return ListView.builder(
-      itemCount: tasksToShow.length,
-      itemBuilder: (context, index) {
-        var task = tasksToShow[index];
-        return ListTile(
-          title: Text(task.name),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (task.description.isNotEmpty) Text(task.description),
-              if (task.deadline != null) Text('Fecha límite: ${task.deadline}'),
-            ],
-          ),
-          leading: Checkbox(
-            value: task.completed,
-            onChanged: (bool? newValue) {
-              setState(() {
-                task.toggleComplete();
-              });
-            },
-            activeColor: Colors.green,
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _getPriorityText(task.priority),
-                style: TextStyle(
-                  color: _getPriorityColor(task.priority),
-                  fontWeight: FontWeight.bold,
-                ),
+          if (priorityComparison == 0) {
+            return a.name.compareTo(b.name);
+          }
+
+          return priorityComparison;
+        });
+
+        return ListView.builder(
+          itemCount: tasksToShow.length,
+          itemBuilder: (context, index) {
+            var task = tasksToShow[index];
+            return ListTile(
+              title: Text(task.name),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (task.description.isNotEmpty) Text(task.description),
+                  if (task.deadline != null)
+                    Text('Fecha límite: ${task.deadline}'),
+                ],
               ),
-              SizedBox(width: 10),
-              IconButton(
-                icon: Icon(Icons.edit, color: Colors.blue.shade400),
-                onPressed: () {
-                  _showEditTaskDialog(task);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
+              leading: Checkbox(
+                value: task.completed,
+                onChanged: (bool? newValue) {
                   setState(() {
-                    _taskController.deleteTask(task);
+                    _taskController.toggleTaskComplete(
+                        task.id, newValue ?? false);
                   });
                 },
+                activeColor: Colors.green,
               ),
-            ],
-          ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _getPriorityText(task.priority),
+                    style: TextStyle(
+                      color: _getPriorityColor(task.priority),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue.shade400),
+                    onPressed: () {
+                      _showEditTaskDialog(task);
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() {
+                        _taskController.deleteTask(task.id);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
@@ -240,7 +253,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     _newTaskController.clear();
                     _descriptionController.clear();
                     _deadlineController.clear();
-                    setState(() {});
                   },
                 ),
               ],
@@ -338,7 +350,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   child: Text('Guardar'),
                   onPressed: () {
                     _taskController.editTask(
-                      task,
+                      task.id,
                       _editTaskController.text,
                       newDescription: _descriptionController.text,
                       newDeadline: _deadline,
@@ -348,7 +360,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     _editTaskController.clear();
                     _descriptionController.clear();
                     _deadlineController.clear();
-                    setState(() {});
                   },
                 ),
               ],

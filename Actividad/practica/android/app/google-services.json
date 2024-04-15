@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522364690237",
+    "project_id": "flutter-udem-2024-360ee",
+    "storage_bucket": "flutter-udem-2024-360ee.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522364690237:android:0422486dd302eb0034ef54",
+        "android_client_info": {
+          "package_name": "com.example.practica"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmEMqdAh-WTlRgidZCmhNpJbPAdvaM2QM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

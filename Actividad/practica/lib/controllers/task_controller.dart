@@ -1,47 +1,64 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task.dart';
 
 class TaskController {
-  List<Task> _tasks = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  void addTask(String name,
+  Future<void> addTask(String name,
       {String description = '',
       DateTime? deadline,
-      TaskPriority priority = TaskPriority.Low}) {
-    final task = Task(
-        name: name,
-        description: description,
-        deadline: deadline,
-        priority: priority);
-    _tasks.add(task);
+      TaskPriority priority = TaskPriority.Low}) async {
+    await _firestore.collection('tasks').add({
+      'name': name,
+      'description': description,
+      'deadline': deadline,
+      'priority': priority.toString(),
+      'completed': false,
+    });
   }
 
-  void deleteTask(Task task) {
-    _tasks.remove(task);
+  Future<void> deleteTask(String taskId) async {
+    await _firestore.collection('tasks').doc(taskId).delete();
   }
 
-  void toggleTaskComplete(Task task) {
-    task.toggleComplete();
+  Future<void> toggleTaskComplete(String taskId, bool completed) async {
+    await _firestore.collection('tasks').doc(taskId).update({
+      'completed': completed,
+    });
   }
 
-  void editTask(Task task, String newName,
+  Future<void> editTask(String taskId, String newName,
       {String newDescription = '',
       DateTime? newDeadline,
-      TaskPriority newPriority = TaskPriority.Low}) {
-    task.name = newName;
-    task.description = newDescription;
-    task.deadline = newDeadline;
-    task.priority = newPriority;
+      TaskPriority newPriority = TaskPriority.Low}) async {
+    await _firestore.collection('tasks').doc(taskId).update({
+      'name': newName,
+      'description': newDescription,
+      'deadline': newDeadline,
+      'priority': newPriority.toString(),
+    });
   }
 
-  List<Task> getAllTasks() {
-    return List.from(_tasks);
+  Stream<List<Task>> getAllTasks() {
+    return _firestore.collection('tasks').snapshots().map((snapshot) =>
+        snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList());
   }
 
-  List<Task> getCompletedTasks() {
-    return _tasks.where((task) => task.completed).toList();
+  Stream<List<Task>> getCompletedTasks() {
+    return _firestore
+        .collection('tasks')
+        .where('completed', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList());
   }
 
-  List<Task> getIncompleteTasks() {
-    return _tasks.where((task) => !task.completed).toList();
+  Stream<List<Task>> getIncompleteTasks() {
+    return _firestore
+        .collection('tasks')
+        .where('completed', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList());
   }
 }
