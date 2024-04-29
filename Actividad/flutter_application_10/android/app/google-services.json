@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "2773394026",
+    "project_id": "auth-firebase-c70eb",
+    "storage_bucket": "auth-firebase-c70eb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2773394026:android:1a1bf78a195069edf9a013",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_10"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA48ojlRo7njD8eZfpqHgYUmDrmNaOc17M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
